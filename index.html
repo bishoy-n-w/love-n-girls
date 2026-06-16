@@ -26,11 +26,32 @@
             overflow-x: hidden;
         }
 
+        /* Fullscreen Button */
+        #fullscreen-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px; /* Placed on the left side for RTL layout */
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 1000;
+            transition: background 0.3s;
+        }
+
+        #fullscreen-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
         h1 {
             margin-top: 30px;
             color: var(--primary-color);
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
             font-size: 2.5rem;
+            text-align: center;
         }
 
         /* Wheel Section */
@@ -62,7 +83,7 @@
             overflow: hidden;
             transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
             box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
-            /* 4 Slices using conic-gradient */
+            /* 4 Slices */
             background: conic-gradient(
                 #ff6b6b 0deg 90deg,
                 #4ecdc4 90deg 180deg,
@@ -119,7 +140,7 @@
             max-width: 800px;
             text-align: center;
             animation: fadeIn 0.5s ease-in-out;
-            margin-top: 50px;
+            margin-top: 30px;
         }
 
         .screen.active {
@@ -137,6 +158,8 @@
             line-height: 1.5;
             box-shadow: 0 10px 20px rgba(0,0,0,0.5);
             margin-bottom: 30px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         /* Answer Screen */
@@ -149,25 +172,27 @@
             line-height: 1.8;
             text-align: right;
             box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             width: 100%;
+            box-sizing: border-box;
         }
 
         .answer-box ul {
             list-style-type: none;
             padding: 0;
+            margin: 0;
         }
 
         .answer-box li {
             margin-bottom: 15px;
-            padding-right: 20px;
+            padding-right: 25px;
             position: relative;
         }
 
         .answer-box li::before {
             content: "💡";
             position: absolute;
-            right: -10px;
+            right: 0;
             top: 2px;
         }
 
@@ -176,12 +201,8 @@
             font-weight: bold;
             font-style: italic;
             display: block;
-            margin-top: 5px;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            margin-top: 8px;
+            font-size: 0.95em;
         }
 
         .action-btn {
@@ -200,9 +221,72 @@
             background-color: #45b8b0;
         }
 
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Landscape Mobile Adjustments */
+        @media (max-height: 600px) and (orientation: landscape) {
+            h1 {
+                margin-top: 15px;
+                font-size: 1.5rem;
+                margin-bottom: 0;
+            }
+            #wheel-container {
+                margin-top: 15px;
+            }
+            .wheel {
+                width: 200px;
+                height: 200px;
+                border-width: 5px;
+            }
+            .wheel-center {
+                width: 30px;
+                height: 30px;
+            }
+            .pointer {
+                border-left: 15px solid transparent;
+                border-right: 15px solid transparent;
+                border-top: 30px solid var(--primary-color);
+                top: -15px;
+            }
+            .spin-btn {
+                margin-top: 15px;
+                padding: 10px 25px;
+                font-size: 1.2rem;
+            }
+            .screen {
+                margin-top: 15px;
+            }
+            .statement-box {
+                padding: 20px;
+                font-size: 1.3rem;
+                margin-bottom: 15px;
+            }
+            .answer-box {
+                padding: 15px 20px;
+                font-size: 1.1rem;
+                margin-bottom: 10px;
+            }
+            .answer-box li {
+                margin-bottom: 10px;
+            }
+            #round-title {
+                font-size: 1.3rem;
+                margin: 5px 0;
+            }
+            .action-btn {
+                padding: 8px 20px;
+                font-size: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
+
+    <!-- Fullscreen Toggle Button -->
+    <button id="fullscreen-btn" onclick="toggleFullScreen()" title="تكبير الشاشة">⛶</button>
 
     <h1>فقرة: بنشتري راجل 👨🏻</h1>
 
@@ -233,6 +317,26 @@
     </div>
 
     <script>
+        // Fullscreen Toggle Logic
+        function toggleFullScreen() {
+            const btn = document.getElementById("fullscreen-btn");
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().then(() => {
+                    btn.innerHTML = "🗗"; // Icon when in fullscreen
+                    btn.title = "تصغير الشاشة";
+                }).catch(err => {
+                    console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().then(() => {
+                        btn.innerHTML = "⛶"; // Icon when not in fullscreen
+                        btn.title = "تكبير الشاشة";
+                    });
+                }
+            }
+        }
+
         // Data for the 4 rounds
         const roundsData = [
             {
@@ -293,14 +397,7 @@
             const btn = document.getElementById('spin-btn');
             btn.disabled = true;
 
-            // Fake Randomness: Calculate angle to land on specific slice
-            // Wheel has 4 slices (each 90 deg).
-            // Slice 0: 0-90 (Red), Slice 1: 90-180 (Blue), Slice 2: 180-270 (Yellow), Slice 3: 270-360 (Dark)
-            // We'll map round 0 -> slice 0, round 1 -> slice 1, etc.
-            // Pointer is at the top (0 degrees).
-            // To land slice N at the top, we need to rotate to (360 - N*90 - 45).
-            
-            const spins = 5; // 5 full rotations for animation
+            const spins = 5; 
             const sliceAngle = 90;
             const targetAngle = 360 - (currentRound * sliceAngle) - 45; 
             
@@ -309,9 +406,7 @@
             const wheel = document.getElementById('wheel');
             wheel.style.transform = `rotate(${currentRotation}deg)`;
 
-            // Wait for transition to finish (4s)
             setTimeout(() => {
-                // Populate statement screen
                 document.getElementById('round-title').innerText = roundsData[currentRound].title;
                 document.getElementById('statement-text').innerText = roundsData[currentRound].statement;
                 showScreen('statement-screen');
@@ -320,7 +415,6 @@
         }
 
         function showAnswer() {
-            // Populate answer screen
             document.getElementById('answer-text').innerHTML = roundsData[currentRound].answer;
             showScreen('answer-screen');
         }
