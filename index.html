@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بنشتري راجل - Interactive Debate</title>
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --text-color: #ffffff;
+            --primary-color: #e94560;
+            --secondary-color: #0f3460;
+            --wheel-border: #ffd700;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            margin-top: 30px;
+            color: var(--primary-color);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            font-size: 2.5rem;
+        }
+
+        /* Wheel Section */
+        #wheel-container {
+            position: relative;
+            margin-top: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .pointer {
+            position: absolute;
+            top: -20px;
+            z-index: 10;
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid var(--primary-color);
+        }
+
+        .wheel {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 8px solid var(--wheel-border);
+            position: relative;
+            overflow: hidden;
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            /* 4 Slices using conic-gradient */
+            background: conic-gradient(
+                #ff6b6b 0deg 90deg,
+                #4ecdc4 90deg 180deg,
+                #ffe66d 180deg 270deg,
+                #1a535c 270deg 360deg
+            );
+        }
+
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background-color: var(--bg-color);
+            border-radius: 50%;
+            border: 4px solid var(--wheel-border);
+            z-index: 5;
+        }
+
+        .spin-btn {
+            margin-top: 40px;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(233, 69, 96, 0.4);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .spin-btn:hover {
+            transform: scale(1.05);
+            background-color: #ff5c77;
+        }
+
+        .spin-btn:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+            animation: fadeIn 0.5s ease-in-out;
+            margin-top: 50px;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* Statement Screen */
+        .statement-box {
+            background-color: var(--secondary-color);
+            padding: 40px;
+            border-radius: 15px;
+            border-left: 8px solid var(--primary-color);
+            font-size: 2rem;
+            font-weight: bold;
+            line-height: 1.5;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            margin-bottom: 30px;
+        }
+
+        /* Answer Screen */
+        .answer-box {
+            background-color: #222831;
+            padding: 30px;
+            border-radius: 15px;
+            border-right: 8px solid #4ecdc4;
+            font-size: 1.3rem;
+            line-height: 1.8;
+            text-align: right;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            margin-bottom: 30px;
+            width: 100%;
+        }
+
+        .answer-box ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .answer-box li {
+            margin-bottom: 15px;
+            padding-right: 20px;
+            position: relative;
+        }
+
+        .answer-box li::before {
+            content: "💡";
+            position: absolute;
+            right: -10px;
+            top: 2px;
+        }
+
+        .bible-verse {
+            color: #ffd700;
+            font-weight: bold;
+            font-style: italic;
+            display: block;
+            margin-top: 5px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .action-btn {
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            color: white;
+            background-color: #4ecdc4;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            margin: 10px;
+        }
+
+        .action-btn:hover {
+            background-color: #45b8b0;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>فقرة: بنشتري راجل 👨🏻</h1>
+
+    <!-- Wheel Screen -->
+    <div id="wheel-screen" class="screen active">
+        <div id="wheel-container">
+            <div class="pointer"></div>
+            <div class="wheel" id="wheel">
+                <div class="wheel-center"></div>
+            </div>
+        </div>
+        <button class="spin-btn" id="spin-btn" onclick="spinWheel()">لف العجلة 🎲</button>
+    </div>
+
+    <!-- Statement Screen -->
+    <div id="statement-screen" class="screen">
+        <h2 style="color: var(--primary-color);" id="round-title"></h2>
+        <div class="statement-box" id="statement-text"></div>
+        <p style="color: #aaa; font-size: 1.1rem;">(الولاد بتصوت دلوقتي: مع ولا ضد؟)</p>
+        <button class="action-btn" onclick="showAnswer()">إيه هو الرد الصح؟ 💡</button>
+    </div>
+
+    <!-- Answer Screen -->
+    <div id="answer-screen" class="screen">
+        <h2 style="color: #4ecdc4;">الخلاصة والرد الروحي</h2>
+        <div class="answer-box" id="answer-text"></div>
+        <button class="action-btn" style="background-color: var(--primary-color);" onclick="nextRound()">الجولة اللي بعدها 🔄</button>
+    </div>
+
+    <script>
+        // Data for the 4 rounds
+        const roundsData = [
+            {
+                title: "الجولة الأولى: المانجة اللي اتقطفت بدري",
+                statement: "«طالما أنا بحبها بجد ومحترمها، إيه المشكلة لما نرتبط ونتكلم من دلوقتي؟ دي مشاعر حقيقية!»",
+                answer: `<ul>
+                    <li>البلوغ الجسدي حاجة، والنضج النفسي والفكري حاجة تانية خالص. الارتباط المبكر اسمه "حرق بنزين" بيستنزف مشاعرك في وقت إنت مش جاهز فيه.</li>
+                    <li>المانجة لو قطفتها قبل موسمها بتبقى ماسخة ومؤذية. كل حاجة حلوة في وقتها.</li>
+                    <li><span class="bible-verse">"أُحَلِّفُكُنَّ يَا بَنَاتِ أُورُشَلِيمَ... أَلاَّ تُوقِظْنَ وَلاَ تُنَبِّهْنَ الْحَبِيبَ حَتَّى يَشَاءَ." (نشيد الأنشاد 2: 7)</span></li>
+                    <li><span class="bible-verse">"لِكُلِّ شَيْءٍ زَمَانٌ، وَلِكُلِّ أَمْرٍ تَحْتَ السَّمَاوَاتِ وَقْتٌ." (جامعة 3: 1)</span></li>
+                </ul>`
+            },
+            {
+                title: "الجولة الثانية: الـ Best Friend والمقاطيع",
+                statement: "«أنا وهي Best friends، بنسهر نتكلم للصبح، وبنحكي أدق تفاصيل يومنا.. بس إحنا إخوات مفيش بينا حاجة!»",
+                answer: `<ul>
+                    <li>مفيش حاجة اسمها "صاحبتي الأنتيم" برة إطار الزواج. التقارب الشديد والشات المتأخر بيقلب بتعلق عاطفي من غير ما تحس.</li>
+                    <li>الرجولة هي إنك تحط حدود (Boundaries). الصداقة في النور وسط جروب مقبولة، لكن تخطي الحدود بيجرح المشاعر.</li>
+                    <li><span class="bible-verse">"اَلْمُكَثِّرُ الأَصْحَابِ يُخْرِبُ نَفْسَهُ، وَلكِنْ يُوجَدْ مُحِبٌّ أَلْزَقُ مِنَ الأَخِ." (أمثال 18: 24)</span></li>
+                    <li><span class="bible-verse">"لاَ تَضِلُّوا: فَإِنَّ الْمُعَاشَرَاتِ الرَّدِيَّةَ تُفْسِدُ الأَخْلاَقَ الْجَيِّدَةَ." (1 كورنثوس 15: 33)</span></li>
+                </ul>`
+            },
+            {
+                title: "الجولة الثالثة: الحب مشاعر ولا مواقف؟",
+                statement: "«الحب هو إن قلبي يدق وأحس إني مش قادر أعيش من غيرها.. ولو مفيش غيرة وتحكم يبقى مابحبهاش!»",
+                answer: `<ul>
+                    <li>الغيرة المرضية والتحكم مش رجولة، دي علاقة سامة (Toxic).</li>
+                    <li>الحب الحقيقي في المسيحية مش مجرد مشاعر بتتبخر، الحب "موقف" وتضحية وعطاء بدون مقابل.</li>
+                    <li><span class="bible-verse">"الْمَحَبَّةُ تَتَأَنَّى وَتَرْفُقُ. الْمَحَبَّةُ لاَ تَحْسِدُ. الْمَحَبَّةُ لاَ تَتَفَاخَرُ... وَلاَ تَطْلُبُ مَا لِنَفْسِهَا، وَلاَ تُقَبِّحُ." (1 كورنثوس 13: 4-5)</span></li>
+                </ul>`
+            },
+            {
+                title: "الجولة الرابعة: البنت بتلمح لي.. أعمل إيه؟",
+                statement: "«حسيت إن في بنت بتهتم بيا زيادة وبتلمح لي.. عيب أكسفها! لازم أرد الاهتمام باهتمام عشان مابقاش قليل الذوق.»",
+                answer: `<ul>
+                    <li>هنا بتبان "الرجولة" بجد. لو رديت الاهتمام وإنت مش جاهز، إنت بتعلقها بيك وبتجرح قلبها، ودي خيانة للأمانة.</li>
+                    <li>الصح هو التجاهل المحترم وتحكيم العقل ووضع حدود، وتقليل التواجد معاها من غير إهانات.</li>
+                    <li><span class="bible-verse">"فَوْقَ كُلِّ تَحَفُّظٍ احْفَظْ قَلْبَكَ، لأَنَّ مِنْهُ مَخَارِجَ الْحَيَاةِ." (أمثال 4: 23)</span></li>
+                    <li><span class="bible-verse">"فَيَمْلأُ إِلهِي كُلَّ احْتِيَاجِكُمْ بِحَسَبِ غِنَاهُ فِي الْمَجْدِ فِي الْمَسِيحِ يَسُوعَ." (فيلبي 4: 19)</span></li>
+                </ul>`
+            }
+        ];
+
+        let currentRound = 0;
+        let currentRotation = 0;
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function spinWheel() {
+            if (currentRound >= roundsData.length) {
+                alert("الفقرة خلصت! شكراً ليكم يا شباب.");
+                return;
+            }
+
+            const btn = document.getElementById('spin-btn');
+            btn.disabled = true;
+
+            // Fake Randomness: Calculate angle to land on specific slice
+            // Wheel has 4 slices (each 90 deg).
+            // Slice 0: 0-90 (Red), Slice 1: 90-180 (Blue), Slice 2: 180-270 (Yellow), Slice 3: 270-360 (Dark)
+            // We'll map round 0 -> slice 0, round 1 -> slice 1, etc.
+            // Pointer is at the top (0 degrees).
+            // To land slice N at the top, we need to rotate to (360 - N*90 - 45).
+            
+            const spins = 5; // 5 full rotations for animation
+            const sliceAngle = 90;
+            const targetAngle = 360 - (currentRound * sliceAngle) - 45; 
+            
+            currentRotation += (spins * 360) + targetAngle - (currentRotation % 360);
+
+            const wheel = document.getElementById('wheel');
+            wheel.style.transform = `rotate(${currentRotation}deg)`;
+
+            // Wait for transition to finish (4s)
+            setTimeout(() => {
+                // Populate statement screen
+                document.getElementById('round-title').innerText = roundsData[currentRound].title;
+                document.getElementById('statement-text').innerText = roundsData[currentRound].statement;
+                showScreen('statement-screen');
+                btn.disabled = false;
+            }, 4000);
+        }
+
+        function showAnswer() {
+            // Populate answer screen
+            document.getElementById('answer-text').innerHTML = roundsData[currentRound].answer;
+            showScreen('answer-screen');
+        }
+
+        function nextRound() {
+            currentRound++;
+            if (currentRound >= roundsData.length) {
+                document.getElementById('wheel-screen').innerHTML = `
+                    <h2 style="color: var(--wheel-border);">أنت كدة خلصت الـ 4 جولات! 💪</h2>
+                    <h3 style="color: #aaa;">"فَوْقَ كُلِّ تَحَفُّظٍ احْفَظْ قَلْبَكَ"</h3>
+                `;
+            }
+            showScreen('wheel-screen');
+        }
+    </script>
+</body>
+</html>
